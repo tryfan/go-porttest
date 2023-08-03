@@ -20,7 +20,8 @@ jobs:
         id: get_version
         run: |
           REF_NAME=${GITHUB_REF#refs/*/}
-          echo "::set-output name=VERSION::${REF_NAME}"
+          echo "gitver=${REF_NAME}" >> "$GITHUB_ENV"
+          # echo "::set-output name=VERSION::${REF_NAME}"
 
       - name: Build
         run: make all
@@ -28,7 +29,7 @@ jobs:
       - name: Bundle
         run: |
           mkdir -p release
-          zip -j release/porttest_${{ steps.get_version.outputs.VERSION }}.zip bin/*
+          zip -j release/porttest_${{ env.gitver }}.zip bin/*
 
       - name: Make Release
         id: make_release
@@ -36,9 +37,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          release_name: Release ${{ steps.get_version.outputs.VERSION }}
-          body: Release ${{ steps.get_version.outputs.VERSION }}
+          tag_name: ${{ env.gitver }}
+          release_name: Release ${{ env.gitver }}
+          body: Release ${{ env.gitver }}
           draft: true
           prerelease: true
         
@@ -48,6 +49,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.make_release.outputs.upload_url }}
-          asset_path: release/porttest_${{ steps.get_version.outputs.VERSION }}.zip
-          asset_name: porttest_${{ steps.get_version.outputs.VERSION }}.zip
+          asset_path: release/porttest_${{ env.gitver }}.zip
+          asset_name: porttest_${{ env.gitver }}.zip
           asset_content_type: application/zip

@@ -48,6 +48,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.make_release.outputs.upload_url }}
-          asset_path: bin/porttest_${{ steps.get_version.outputs.VERSION }}.zip
+          asset_path: release/porttest_${{ steps.get_version.outputs.VERSION }}.zip
           asset_name: porttest_${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip

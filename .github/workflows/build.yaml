@@ -39,6 +39,8 @@ jobs:
           body: Release ${{ steps.get_tag.outputs.tag }}
           draft: true
           prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload
         uses: actions/upload-release-asset@v1

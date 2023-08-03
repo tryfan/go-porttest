@@ -16,36 +16,38 @@ jobs:
         with:
           go-version: 1.19.4
       
-      - name: Get Tag
-        id: get_tag
-        run: echo "::set-output name=tag::$(git describe --tags)"
+      - name: Get Version
+        id: get_version
+        run: |
+          REF_NAME=${GITHUB_REF#refs/*/}
+          echo "::set-output name=VERSION::${REF_NAME}"
 
       - name: Build
-        run: |
-          make all
+        run: make all
       
       - name: Bundle
         run: |
-          cd bin
-          version=$(git describe --tags)
-          zip -r porttest_${{ steps.get_tag.outputs.tag }}.zip porttest sender receiver
+          mkdir -p release
+          zip -j release/porttest_${{ steps.get_version.outputs.VERSION }}.zip bin/*
 
       - name: Make Release
         id: make_release
         uses: actions/create-release@v1
-        with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
-          release_name: Release ${{ steps.get_tag.outputs.tag }}
-          body: Release ${{ steps.get_tag.outputs.tag }}
-          draft: true
-          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: true
+          prerelease: true
+        
       - name: Upload
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.make_release.outputs.upload_url }}
-          asset_path: bin/porttest_${{ steps.get_tag.outputs.tag }}.zip
-          asset_name: porttest_${{ steps.get_tag.outputs.tag }}.zip
+          asset_path: bin/porttest_${{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: porttest_${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
